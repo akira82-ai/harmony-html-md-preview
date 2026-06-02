@@ -5,7 +5,7 @@
 ## 功能特性
 
 - **HTML 预览**：通过 Web 组件渲染 HTML 内容，支持复杂页面（表格、表单、动画等）
-- **Markdown 预览**：内置 JS 解析器，支持标题、粗体/斜体、代码块、表格、引用、列表等常用语法
+- **Markdown 预览**：基于 marked.js 解析引擎（保留自写解析器作为 fallback），支持标题、粗体/斜体、代码块、表格、引用、列表等常用语法
 - **分享接收**：注册为系统分享目标，可直接从其他应用接收并预览 HTML/Markdown 文件
 - **内置测试文件**：包含 7 个示例文件（4 个 HTML + 3 个 Markdown），可本地测试
 
@@ -27,7 +27,8 @@ harmony-html-md-preview/
 │   │   │   └── utils/
 │   │   │       └── FileUtils.ets      # 文件读取 & 类型判断工具
 │   │   └── resources/rawfile/
-│   │       ├── markdown.html          # 自定义 JS Markdown 解析器
+│   │       ├── markdown.html          # Markdown 渲染模板（marked.js + 自写 fallback）
+│   │       ├── marked.min.js          # marked.js Markdown 解析库
 │   │       ├── *.html (4个)           # 测试用 HTML 文件
 │   │       └── *.md (3个)             # 测试用 Markdown 文件
 │   └── build-profile.json5
@@ -51,7 +52,7 @@ FileUtils (读取文件内容 + 判断类型)
   ↓                ↓
 HtmlViewer       MarkdownViewer
 (base64 Data URL   (加载 markdown.html
- 渲染 Web 组件)    + runJavaScript 注入)
+ 渲染 Web 组件)    + base64 编码注入渲染)
 ```
 
 ## 技术实现
@@ -60,10 +61,10 @@ HtmlViewer       MarkdownViewer
 |------|---------|
 | 接收分享 | `module.json5` 声明 `entity.system.share`，支持 `file://` URI 和 `general.text` / `general.html` UTD |
 | HTML 渲染 | 内容 base64 编码 → `data:text/html;base64,...` → Web 组件加载 |
-| Markdown 渲染 | 加载 `markdown.html` 模板 → `runJavaScript()` 注入内容调用 `renderMarkdown()` |
+| Markdown 渲染 | 加载 `markdown.html` 模板 → 内容 base64 编码 → `runJavaScript()` 调用 `renderMarkdown(base64Str)` |
 | 状态管理 | `AppStorage` + `@StorageLink` 桥接 Ability 层与 UI 层 |
 | 文件 I/O | `@kit.CoreFileKit` 同步读取，支持扩展名 + UTD 双重类型判断 |
-| 外部依赖 | 零依赖，Markdown 解析器为纯 JS 手写实现 |
+| 外部依赖 | 引入 marked.js 作为 Markdown 主解析引擎，保留自写解析器作为 fallback |
 
 ## 内置测试文件
 
