@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "File Viewer Module - Receive and display HTML/Markdown files"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Main ability for receiving shared files"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "File Viewer"
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复杂HTML测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        .highlight {
+            background-color: yellow;
+            padding: 2px 5px;
+        }
+        .code-block {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>复杂HTML测试页面</h1>
+    
+    <h2>表格测试</h2>
+    <table border="1" cellpadding="10" cellspacing="0">
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>年龄</th>
+                <th>城市</th>
+                <th>职业</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>张三</td>
+                <td>28</td>
+                <td>北京</td>
+                <td>工程师</td>
+            </tr>
+            <tr>
+                <td>李四</td>
+                <td>32</td>
+                <td>上海</td>
+                <td>设计师</td>
+            </tr>
+            <tr>
+                <td>王五</td>
+                <td>25</td>
+                <td>深圳</td>
+                <td>产品经理</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>嵌套列表</h2>
+    <ul>
+        <li>前端技术
+            <ul>
+                <li>HTML</li>
+                <li>CSS
+                    <ul>
+                        <li>Flexbox</li>
+                        <li>Grid</li>
+                    </ul>
+                </li>
+                <li>JavaScript</li>
+            </ul>
+        </li>
+        <li>后端技术
+            <ol>
+                <li>Node.js</li>
+                <li>Python</li>
+                <li>Java</li>
+            </ol>
+        </li>
+    </ul>
+    
+    <h2>样式测试</h2>
+    <p>这是<span class="highlight">高亮文本</span>测试。</p>
+    <p>这是<mark>标记文本</mark>测试。</p>
+    <p>这是<del>删除线</del>和<ins>下划线</ins>测试。</p>
+    
+    <h2>代码块测试</h2>
+    <div class="code-block">
+        <pre><code>
+function greet(name) {
+    console.log(`Hello, ${name}!`);
+    return `Welcome, ${name}!`;
+}
+
+// 调用函数
+const message = greet('HarmonyOS');
+        </code></pre>
+    </div>
+    
+    <h2>表单元素测试</h2>
+    <form>
+        <label for="name">姓名：</label>
+        <input type="text" id="name" name="name" placeholder="请输入姓名"><br><br>
+        
+        <label for="email">邮箱：</label>
+        <input type="email" id="email" name="email" placeholder="请输入邮箱"><br><br>
+        
+        <label for="message">留言：</label><br>
+        <textarea id="message" name="message" rows="4" cols="50" placeholder="请输入留言"></textarea><br><br>
+        
+        <button type="button">提交</button>
+        <button type="reset">重置</button>
+    </form>
+    
+    <h2>多媒体测试</h2>
+    <p>视频占位：</p>
+    <video width="320" height="240" controls>
+        <source src="movie.mp4" type="video/mp4">
+        您的浏览器不支持视频标签。
+    </video>
+    
+    <p>音频占位：</p>
+    <audio controls>
+        <source src="audio.mp3" type="audio/mpeg">
+        您的浏览器不支持音频标签。
+    </audio>
+</body>
+</html>

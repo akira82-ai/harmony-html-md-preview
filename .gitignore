@@ -1,0 +1,22 @@
+# IDE
+.idea/
+
+# Build cache
+.hvigor/
+build/
+
+# Local config
+local.properties
+
+# macOS
+.DS_Store
+
+# Dependencies
+node_modules/
+oh_modules/
+
+# Dev/test artifacts
+MARKDOWN_DEBUG_GUIDE.md
+MARKDOWN_TABLE_SUPPORT.md
+SHARE_TEST_GUIDE.md
+test-share.html
