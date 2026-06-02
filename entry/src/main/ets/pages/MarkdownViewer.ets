@@ -1,6 +1,7 @@
 import { webview } from '@kit.ArkWeb';
 import { router } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { buffer } from '@kit.ArkTS';
 
 const DOMAIN = 0x0000;
 const TAG = 'MarkdownViewer';
@@ -14,6 +15,7 @@ struct MarkdownViewerPage {
   @State errorMessage: string = '';
   
   private webController: webview.WebviewController = new webview.WebviewController();
+  private isContentRendered: boolean = false;
 
   aboutToAppear(): void {
     hilog.info(DOMAIN, TAG, 'MarkdownViewerPage aboutToAppear');
@@ -168,13 +170,20 @@ struct MarkdownViewerPage {
         })
         .onPageEnd((event) => {
           hilog.info(DOMAIN, TAG, 'Web page loaded successfully: %{public}s', event?.url ?? 'unknown');
-          // Inject markdown content and render
-          this.injectMarkdownContent();
+          // Inject markdown content and render (only on initial page load)
+          if (!this.isContentRendered) {
+            this.injectMarkdownContent();
+          }
         })
         .onErrorReceive((event) => {
-          hilog.error(DOMAIN, TAG, 'Web error receive: %{public}s', JSON.stringify(event));
-          this.errorMessage = 'Failed to load Markdown viewer';
-          this.isLoading = false;
+          hilog.warn(DOMAIN, TAG, 'Web error receive: %{public}s', JSON.stringify(event));
+          // Only treat as fatal error during initial page load, not after content is rendered.
+          // Scrolling/navigation may trigger non-critical WebView errors that should be ignored.
+          if (!this.isContentRendered) {
+            hilog.error(DOMAIN, TAG, 'Fatal error during initial page load');
+            this.errorMessage = 'Failed to load Markdown viewer';
+            this.isLoading = false;
+          }
         })
         .onHttpErrorReceive((event) => {
           hilog.error(DOMAIN, TAG, 'Web HTTP error: %{public}s', JSON.stringify(event));
@@ -187,27 +196,23 @@ struct MarkdownViewerPage {
   private injectMarkdownContent() {
     hilog.info(DOMAIN, TAG, 'Starting to inject markdown content');
     
-    // Escape the markdown content for JavaScript
-    const escapedContent = this.markdownContent
-      .replace(/\\/g, '\\\\')
-      .replace(/'/g, "\\'")
-      .replace(/\n/g, '\\n')
-      .replace(/\r/g, '\\r');
+    // Encode markdown content as base64 to safely pass through JavaScript
+    const b64Content = buffer.from(this.markdownContent, 'utf-8').toString('base64');
     
     const jsCode = `
       try {
-        if (typeof renderMarkdown === 'function') {
-          renderMarkdown('${escapedContent}');
+        if (typeof renderMarkdownBase64 === 'function') {
+          renderMarkdownBase64('${b64Content}');
           'success';
         } else {
-          'renderMarkdown function not found';
+          'renderMarkdownBase64 function not found';
         }
       } catch (e) {
         'Error: ' + e.message;
       }
     `;
     
-    hilog.info(DOMAIN, TAG, 'JavaScript code length: %{public}d', jsCode.length);
+    hilog.info(DOMAIN, TAG, 'Base64 content length: %{public}d', b64Content.length);
     
     this.webController.runJavaScript(jsCode)
       .then((result) => {
@@ -215,6 +220,7 @@ struct MarkdownViewerPage {
         // Check if result contains 'success' (may have quotes)
         if (result && result.includes('success')) {
           hilog.info(DOMAIN, TAG, 'Markdown content injected successfully');
+          this.isContentRendered = true;
           this.isLoading = false;
         } else {
           hilog.error(DOMAIN, TAG, 'Markdown rendering failed: %{public}s', result ?? 'unknown');

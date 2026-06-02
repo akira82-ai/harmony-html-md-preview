@@ -133,34 +133,6 @@
             margin-bottom: 0;
         }
         
-        /* Tables */
-        table {
-            border-spacing: 0;
-            border-collapse: collapse;
-            margin-bottom: 16px;
-            width: 100%;
-        }
-        
-        table th,
-        table td {
-            padding: 6px 13px;
-            border: 1px solid #dfe2e5;
-        }
-        
-        table th {
-            font-weight: 600;
-            background-color: #f6f8fa;
-        }
-        
-        table tr {
-            background-color: #fff;
-            border-top: 1px solid #c6cbd1;
-        }
-        
-        table tr:nth-child(2n) {
-            background-color: #f6f8fa;
-        }
-        
         /* Horizontal rule */
         hr {
             height: 0.25em;
@@ -181,10 +153,14 @@
 <body>
     <div id="content"></div>
     
+    <!-- marked.js library (primary parser) -->
+    <script src="marked.min.js"></script>
+    
     <script>
-        // Simple Markdown parser
+        // ============================================================
+        // Fallback custom Markdown parser (used when marked.js is unavailable)
+        // ============================================================
         function parseTables(html) {
-            // Find table blocks (consecutive lines starting with |)
             const lines = html.split('\n');
             let result = [];
             let tableLines = [];
@@ -193,7 +169,6 @@
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i].trim();
                 
-                // Check if this line is a table row
                 if (line.startsWith('|') && line.endsWith('|')) {
                     if (!inTable) {
                         inTable = true;
@@ -201,9 +176,7 @@
                     }
                     tableLines.push(line);
                 } else {
-                    // Not a table line
                     if (inTable) {
-                        // End of table, parse it
                         result.push(parseTableBlock(tableLines));
                         tableLines = [];
                         inTable = false;
@@ -212,7 +185,6 @@
                 }
             }
             
-            // Handle table at end of content
             if (inTable) {
                 result.push(parseTableBlock(tableLines));
             }
@@ -227,7 +199,6 @@
             
             let html = '<table>\n';
             
-            // First line is header
             const headerCells = tableLines[0].split('|').filter(cell => cell.trim() !== '');
             html += '<thead>\n<tr>\n';
             headerCells.forEach(cell => {
@@ -235,8 +206,6 @@
             });
             html += '</tr>\n</thead>\n';
             
-            // Skip separator line (second line)
-            // Rest are body rows
             if (tableLines.length > 2) {
                 html += '<tbody>\n';
                 for (let i = 2; i < tableLines.length; i++) {
@@ -333,12 +302,63 @@
             
             return html;
         }
+
+        // ============================================================
+        // Core rendering functions
+        // ============================================================
+
+        // Decode base64 string to UTF-8 text
+        function decodeBase64(b64) {
+            try {
+                const binaryString = atob(b64);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return new TextDecoder('utf-8').decode(bytes);
+            } catch (e) {
+                console.error('Base64 decode error:', e);
+                return '';
+            }
+        }
         
+        // Render markdown content (plain text input)
+        // Strategy: marked.js first, custom parser as fallback
         function renderMarkdown(content) {
             const contentDiv = document.getElementById('content');
-            if (contentDiv) {
-                contentDiv.innerHTML = parseMarkdown(content);
+            if (!contentDiv) {
+                return 'content div not found';
             }
+            try {
+                let html;
+                if (typeof marked !== 'undefined') {
+                    // Primary: use marked.js
+                    html = marked.parse(content);
+                } else {
+                    // Fallback: use custom parser
+                    console.warn('marked.js unavailable, using fallback parser');
+                    html = parseMarkdown(content);
+                }
+                contentDiv.innerHTML = html;
+                return 'success';
+            } catch (e) {
+                // marked.js threw an error, try fallback parser
+                console.error('marked.js render error, trying fallback:', e);
+                try {
+                    const html = parseMarkdown(content);
+                    contentDiv.innerHTML = html;
+                    return 'success (fallback)';
+                } catch (fallbackErr) {
+                    console.error('Fallback parser also failed:', fallbackErr);
+                    return 'Error: ' + e.message;
+                }
+            }
+        }
+        
+        // Render markdown content from base64-encoded input
+        function renderMarkdownBase64(b64Content) {
+            const content = decodeBase64(b64Content);
+            return renderMarkdown(content);
         }
     </script>
 </body>
