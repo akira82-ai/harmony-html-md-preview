@@ -8,8 +8,8 @@ import { util } from '@kit.ArkTS';
 const DOMAIN = 0x0000;
 const TAG = 'IndexPage';
 
-// Test file definition
-interface TestFile {
+// Sample file definition
+interface SampleFile {
   name: string;
   fileName: string;
   type: FileType;
@@ -22,7 +22,7 @@ struct Index {
   @State hasSharedData: boolean = false;
   @State isLoading: boolean = false;
   @State errorMessage: string = '';
-  @State showTestFiles: boolean = false;
+  @State showSampleFiles: boolean = false;
   @StorageLink('sharedFileUri') @Watch('onSharedDataChanged') sharedFileUri: string = '';
   @StorageLink('sharedFileUtd') sharedFileUtd: string = '';
   @StorageLink('hasSharedData') @Watch('onSharedDataChanged') storageHasSharedData: boolean = false;
@@ -38,12 +38,12 @@ struct Index {
     }
   }
   
-  // Test files list
-  private testFiles: TestFile[] = [
-    { name: '简单 HTML', fileName: 'simple.html', type: FileType.HTML, icon: '🌐' },
+  // Sample files list
+  private sampleFiles: SampleFile[] = [
+    { name: '基础 HTML', fileName: 'simple.html', type: FileType.HTML, icon: '🌐' },
     { name: '复杂 HTML', fileName: 'rich.html', type: FileType.HTML, icon: '🎨' },
     { name: '中文 HTML', fileName: 'chinese.html', type: FileType.HTML, icon: '🇨🇳' },
-    { name: '桌面宠物', fileName: 'new.html', type: FileType.HTML, icon: '🐔' },
+    { name: 'HTML 动画演示', fileName: 'html-ppt.html', type: FileType.HTML, icon: '🎬' },
     { name: '基础 Markdown', fileName: 'basic.md', type: FileType.MARKDOWN, icon: '📝' },
     { name: '高级 Markdown', fileName: 'advanced.md', type: FileType.MARKDOWN, icon: '🚀' },
     { name: '混合内容', fileName: 'mixed.md', type: FileType.MARKDOWN, icon: '🔀' }
@@ -145,8 +145,8 @@ struct Index {
         this.ErrorView();
       } else if (this.hasSharedData) {
         this.ProcessingView();
-      } else if (this.showTestFiles) {
-        this.TestFilesView();
+      } else if (this.showSampleFiles) {
+        this.SampleFilesView();
       } else {
         this.WelcomeView();
       }
@@ -240,132 +240,207 @@ struct Index {
     .alignItems(HorizontalAlign.Center)
   }
 
+  // ==================== WelcomeView (Redesigned) ====================
+
   @Builder
   WelcomeView() {
-    Column() {
-      // Icon
-      Text('📄')
-        .fontSize(60)
-        .fontColor('#007DFF')
-      
-      // Title
-      Text('File Viewer')
-        .fontSize(28)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#333333')
-        .margin({ top: 32 })
-      
-      // Description
-      Text('View HTML and Markdown files shared from other apps')
-        .fontSize(16)
-        .fontColor('#666666')
-        .margin({ top: 16 })
-        .textAlign(TextAlign.Center)
-        .padding({ left: 48, right: 48 })
-      
-      // Test Button
-      Button('🧪 测试文件')
-        .fontSize(16)
-        .fontColor('#FFFFFF')
-        .backgroundColor('#10AEFF')
-        .borderRadius(8)
-        .height(44)
-        .width(200)
-        .margin({ top: 32 })
-        .onClick(() => {
-          this.showTestFiles = true;
-        })
-      
-      // Instructions
+    Scroll() {
       Column() {
-        this.InstructionItem('1', 'Open any app with files (e.g., File Manager)')
-        this.InstructionItem('2', 'Select an HTML or Markdown file')
-        this.InstructionItem('3', 'Tap Share and select File Viewer')
-      }
-      .width('100%')
-      .margin({ top: 32 })
-      .padding({ left: 32, right: 32 })
-      
-      // Supported formats
-      Column() {
-        Text('Supported Formats')
-          .fontSize(14)
-          .fontColor('#999999')
-          .margin({ bottom: 8 })
-        
-        Row() {
-          this.FormatBadge('HTML')
-          this.FormatBadge('Markdown')
+        // ---- Hero Section ----
+        Column() {
+          // App icon — styled circular badge with initials
+          Stack() {
+            Circle()
+              .width(88)
+              .height(88)
+              .fill('#E8F0FE')
+            Text('FV')
+              .fontSize(36)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#1A73E8')
+          }
+          .width(88)
+          .height(88)
+
+          // App title
+          Text('File Viewer')
+            .fontSize(28)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#1A1A1A')
+            .margin({ top: 20 })
+
+          // Tagline
+          Text('轻量级 HTML 与 Markdown 文件预览工具')
+            .fontSize(15)
+            .fontColor('#666666')
+            .margin({ top: 8 })
+            .textAlign(TextAlign.Center)
+            .padding({ left: 40, right: 40 })
+
+          // Supported format badges
+          Row() {
+            this.FormatBadge('HTML', '#FF6B6B', '#FFF0F0')
+            this.FormatBadge('Markdown', '#4ECDC4', '#E8FAF8')
+          }
+          .margin({ top: 16 })
         }
+        .width('100%')
+        .alignItems(HorizontalAlign.Center)
+        .padding({ top: 48, bottom: 24 })
+
+        // ---- Divider ----
+        Divider()
+          .width('80%')
+          .color('#E0E0E0')
+          .margin({ top: 8, bottom: 8 })
+
+        // ---- Usage Guide Section ----
+        Column() {
+          Text('使用方式')
+            .fontSize(16)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#333333')
+            .margin({ bottom: 16 })
+
+          this.GuideStep('1', '从其他应用（如文件管理器）打开文件')
+          this.GuideStep('2', '选择「分享」或「打开方式」')
+          this.GuideStep('3', '选择 File Viewer 完成预览')
+        }
+        .width('100%')
+        .padding({ left: 32, right: 32, top: 16, bottom: 16 })
+        .alignItems(HorizontalAlign.Start)
+
+        // ---- Divider ----
+        Divider()
+          .width('80%')
+          .color('#E0E0E0')
+          .margin({ top: 8, bottom: 8 })
+
+        // ---- Sample Files Button ----
+        Button('浏览内置示例文件')
+          .fontSize(16)
+          .fontColor('#FFFFFF')
+          .backgroundColor('#1A73E8')
+          .borderRadius(24)
+          .height(48)
+          .width(220)
+          .margin({ top: 24 })
+          .shadow({ radius: 8, color: '#331A73E8', offsetX: 0, offsetY: 4 })
+          .onClick(() => {
+            this.showSampleFiles = true;
+          })
+
+        // ---- Spacer ----
+        Blank()
+          .height(24)
+
+        // ---- Footer / Author Section ----
+        Column() {
+          Divider()
+            .width('80%')
+            .color('#E0E0E0')
+            .margin({ bottom: 20 })
+
+          Text('关于')
+            .fontSize(13)
+            .fontColor('#999999')
+            .margin({ bottom: 6 })
+
+          Text('File Viewer — 开源 HarmonyOS 文件预览应用')
+            .fontSize(12)
+            .fontColor('#AAAAAA')
+            .textAlign(TextAlign.Center)
+
+          Text('基于 marked.js Markdown 解析引擎')
+            .fontSize(12)
+            .fontColor('#AAAAAA')
+            .margin({ top: 4 })
+            .textAlign(TextAlign.Center)
+
+          Text('GitHub: github.com/agirayaksoy/harmony-html-md-preview')
+            .fontSize(12)
+            .fontColor('#1A73E8')
+            .margin({ top: 8 })
+            .textAlign(TextAlign.Center)
+            .decoration({ type: TextDecorationType.Underline, color: '#1A73E8' })
+
+          Text('作者: Agiray Aksoy')
+            .fontSize(12)
+            .fontColor('#BBBBBB')
+            .margin({ top: 8, bottom: 16 })
+        }
+        .width('100%')
+        .alignItems(HorizontalAlign.Center)
       }
-      .margin({ top: 32 })
     }
     .width('100%')
     .layoutWeight(1)
-    .justifyContent(FlexAlign.Center)
-    .alignItems(HorizontalAlign.Center)
-    .padding({ top: 48, bottom: 48 })
+    .scrollBar(BarState.Off)
   }
 
   @Builder
-  InstructionItem(number: string, text: string) {
+  GuideStep(number: string, text: string) {
     Row() {
       Text(number)
-        .fontSize(14)
+        .fontSize(13)
         .fontColor('#FFFFFF')
-        .width(28)
-        .height(28)
+        .fontWeight(FontWeight.Medium)
+        .width(24)
+        .height(24)
         .textAlign(TextAlign.Center)
-        .borderRadius(14)
-        .backgroundColor('#007DFF')
+        .borderRadius(12)
+        .backgroundColor('#1A73E8')
       
       Text(text)
         .fontSize(14)
-        .fontColor('#666666')
+        .fontColor('#555555')
         .margin({ left: 12 })
         .layoutWeight(1)
     }
     .width('100%')
     .alignItems(VerticalAlign.Center)
-    .margin({ bottom: 16 })
+    .margin({ bottom: 12 })
   }
 
   @Builder
-  FormatBadge(format: string) {
+  FormatBadge(format: string, textColor: string, bgColor: string) {
     Text(format)
       .fontSize(12)
-      .fontColor('#007DFF')
-      .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-      .borderRadius(4)
-      .backgroundColor('#E3F2FD')
+      .fontColor(textColor)
+      .fontWeight(FontWeight.Medium)
+      .padding({ left: 14, right: 14, top: 6, bottom: 6 })
+      .borderRadius(16)
+      .backgroundColor(bgColor)
       .margin({ left: 6, right: 6 })
   }
   
+  // ==================== Sample Files View ====================
+
   @Builder
-  TestFilesView() {
+  SampleFilesView() {
     Column() {
       // Header
       Row() {
         Button('← 返回')
           .fontSize(16)
-          .fontColor('#007DFF')
+          .fontColor('#1A73E8')
           .backgroundColor(Color.Transparent)
           .onClick(() => {
-            this.showTestFiles = false;
+            this.showSampleFiles = false;
           })
         
         Blank()
         
-        Text('测试文件')
+        Text('示例文件')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#333333')
+          .fontColor('#1A1A1A')
         
         Blank()
         
         Button('← 返回')
           .fontSize(16)
-          .fontColor('#007DFF')
+          .fontColor('#1A73E8')
           .backgroundColor(Color.Transparent)
           .visibility(Visibility.Hidden)
       }
@@ -373,18 +448,18 @@ struct Index {
       .padding({ left: 16, right: 16, top: 16, bottom: 16 })
       
       // Description
-      Text('选择一个测试文件来验证渲染功能')
+      Text('选择一个示例文件来预览渲染效果')
         .fontSize(14)
         .fontColor('#666666')
         .margin({ top: 8, bottom: 16 })
       
-      // Test files list
+      // Sample files list
       List() {
-        ForEach(this.testFiles, (testFile: TestFile) => {
+        ForEach(this.sampleFiles, (sampleFile: SampleFile) => {
           ListItem() {
-            this.TestFileItem(testFile)
+            this.SampleFileItem(sampleFile)
           }
-        }, (testFile: TestFile) => testFile.fileName)
+        }, (sampleFile: SampleFile) => sampleFile.fileName)
       }
       .width('100%')
       .layoutWeight(1)
@@ -395,25 +470,25 @@ struct Index {
   }
   
   @Builder
-  TestFileItem(testFile: TestFile) {
+  SampleFileItem(sampleFile: SampleFile) {
     Row() {
       // Icon
-      Text(testFile.icon)
-        .fontSize(32)
+      Text(sampleFile.icon)
+        .fontSize(28)
         .width(48)
         .height(48)
         .textAlign(TextAlign.Center)
-        .backgroundColor('#F0F0F0')
-        .borderRadius(8)
+        .backgroundColor('#F0F4F8')
+        .borderRadius(12)
       
       // File info
       Column() {
-        Text(testFile.name)
+        Text(sampleFile.name)
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
           .fontColor('#333333')
         
-        Text(testFile.fileName)
+        Text(sampleFile.fileName)
           .fontSize(12)
           .fontColor('#999999')
           .margin({ top: 4 })
@@ -423,12 +498,13 @@ struct Index {
       .layoutWeight(1)
       
       // Type badge
-      Text(testFile.type === FileType.HTML ? 'HTML' : 'MD')
-        .fontSize(12)
+      Text(sampleFile.type === FileType.HTML ? 'HTML' : 'MD')
+        .fontSize(11)
         .fontColor('#FFFFFF')
-        .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-        .borderRadius(4)
-        .backgroundColor(testFile.type === FileType.HTML ? '#FF6B6B' : '#4ECDC4')
+        .fontWeight(FontWeight.Medium)
+        .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+        .borderRadius(12)
+        .backgroundColor(sampleFile.type === FileType.HTML ? '#FF6B6B' : '#4ECDC4')
       
       // Arrow
       Text('›')
@@ -437,20 +513,21 @@ struct Index {
         .margin({ left: 8 })
     }
     .width('100%')
-    .padding({ top: 12, bottom: 12, left: 16, right: 16 })
+    .padding({ top: 14, bottom: 14, left: 16, right: 16 })
     .backgroundColor('#FFFFFF')
-    .borderRadius(8)
+    .borderRadius(12)
     .margin({ bottom: 8 })
+    .shadow({ radius: 2, color: '#0D000000', offsetX: 0, offsetY: 1 })
     .onClick(() => {
-      this.openTestFile(testFile);
+      this.openSampleFile(sampleFile);
     })
   }
   
   /**
-   * Open a test file
+   * Open a sample file
    */
-  private async openTestFile(testFile: TestFile): Promise<void> {
-    hilog.info(DOMAIN, TAG, 'Opening test file: %{public}s', testFile.fileName);
+  private async openSampleFile(sampleFile: SampleFile): Promise<void> {
+    hilog.info(DOMAIN, TAG, 'Opening sample file: %{public}s', sampleFile.fileName);
     this.isLoading = true;
     this.errorMessage = '';
     
@@ -460,35 +537,35 @@ struct Index {
       const resMgr = context.resourceManager;
       
       // Read file content from rawfile
-      const content = await this.readRawFile(resMgr, testFile.fileName);
-      hilog.info(DOMAIN, TAG, 'Test file content read, length: %{public}d', content.length);
+      const content = await this.readRawFile(resMgr, sampleFile.fileName);
+      hilog.info(DOMAIN, TAG, 'Sample file content read, length: %{public}d', content.length);
       
       this.isLoading = false;
       
       // Navigate to appropriate viewer
-      if (testFile.type === FileType.HTML) {
+      if (sampleFile.type === FileType.HTML) {
         hilog.info(DOMAIN, TAG, 'Navigating to HTML viewer');
         router.pushUrl({
           url: 'pages/HtmlViewer',
           params: {
             content: content,
-            fileName: testFile.fileName
+            fileName: sampleFile.fileName
           }
         });
-      } else if (testFile.type === FileType.MARKDOWN) {
+      } else if (sampleFile.type === FileType.MARKDOWN) {
         hilog.info(DOMAIN, TAG, 'Navigating to Markdown viewer');
         router.pushUrl({
           url: 'pages/MarkdownViewer',
           params: {
             content: content,
-            fileName: testFile.fileName
+            fileName: sampleFile.fileName
           }
         });
       }
     } catch (err) {
-      hilog.error(DOMAIN, TAG, 'Failed to open test file: %{public}s', JSON.stringify(err));
+      hilog.error(DOMAIN, TAG, 'Failed to open sample file: %{public}s', JSON.stringify(err));
       this.isLoading = false;
-      this.errorMessage = `Failed to load test file: ${testFile.fileName}`;
+      this.errorMessage = `Failed to load sample file: ${sampleFile.fileName}`;
     }
   }
   
