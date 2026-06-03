@@ -54,14 +54,30 @@ struct Index {
     hilog.info(DOMAIN, TAG, 'hasSharedData: %{public}s', this.storageHasSharedData.toString());
     hilog.info(DOMAIN, TAG, 'sharedFileUri: %{public}s', this.sharedFileUri);
     hilog.info(DOMAIN, TAG, 'sharedFileUtd: %{public}s', this.sharedFileUtd);
-    
+
     // Check if there's shared data immediately (data might already be set)
     if (this.storageHasSharedData && this.sharedFileUri.length > 0) {
       hilog.info(DOMAIN, TAG, 'Found shared data immediately, processing...');
       this.hasSharedData = true;
       this.processSharedFile();
+    } else {
+      // Returning from Viewer — reset local state to show WelcomeView
+      this.hasSharedData = false;
+      this.isLoading = false;
+      this.errorMessage = '';
     }
     // Otherwise, wait for @Watch callback to trigger when data arrives
+  }
+
+  /**
+   * Clear shared data from AppStorage to prevent re-processing when returning to Index
+   */
+  private clearSharedData(): void {
+    hilog.info(DOMAIN, TAG, 'Clearing shared data from AppStorage');
+    AppStorage.setOrCreate('hasSharedData', false);
+    AppStorage.setOrCreate('sharedFileUri', '');
+    AppStorage.setOrCreate('sharedFileUtd', '');
+    this.hasSharedData = false;
   }
 
   /**
@@ -87,7 +103,7 @@ struct Index {
       
       // Navigate to appropriate viewer
       this.isLoading = false;
-      
+
       if (fileType === FileType.HTML) {
         hilog.info(DOMAIN, TAG, 'Navigating to HTML viewer');
         router.pushUrl({
@@ -109,7 +125,11 @@ struct Index {
       } else {
         hilog.error(DOMAIN, TAG, 'Unsupported file type: %{public}s', fileType);
         this.errorMessage = 'Unsupported file type. Please share an HTML or Markdown file.';
+        return;
       }
+
+      // Clear shared data so returning to Index shows WelcomeView instead of re-processing
+      this.clearSharedData();
     } catch (err) {
       hilog.error(DOMAIN, TAG, 'Failed to process shared file: %{public}s', JSON.stringify(err));
       this.isLoading = false;
